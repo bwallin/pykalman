@@ -110,7 +110,7 @@ def _last_dims(X, t, ndims=2):
 
 
 def _loglikelihoods(observation_matrices, observation_offsets,
-                    observation_covariance, predicted_state_means,
+                    observation_covariances, predicted_state_means,
                     predicted_state_covariances, observations):
     """Calculate log likelihood of all observations
 
@@ -121,8 +121,8 @@ def _loglikelihoods(observation_matrices, observation_offsets,
         observation matrices for t in [0...n_timesteps-1]
     observation_offsets : [n_timesteps, n_dim_obs] or [n_dim_obs] array
         offsets for observations for t = [0...n_timesteps-1]
-    observation_covariance : [n_dim_obs, n_dim_obs] array
-        covariance matrix for all observations
+    observation_covariances : [n_timesteps, n_dim_obs, n_dim_obs] or [n_dim_obs, n_dim_obs] array
+        covariance matrix for for t = [0...n_timesteps-1]
     predicted_state_means : [n_timesteps, n_dim_state] array
         mean of state at time t given observations from times
         [0...t-1] for t in [0...n_timesteps-1]
@@ -146,6 +146,7 @@ def _loglikelihoods(observation_matrices, observation_offsets,
         if not np.any(np.ma.getmask(observation)):
             observation_matrix = _last_dims(observation_matrices, t)
             observation_offset = _last_dims(observation_offsets, t, ndims=1)
+            observation_covariance = _last_dims(observation_covariances, t)
             predicted_state_mean = _last_dims(
                 predicted_state_means, t, ndims=1
             )
@@ -296,7 +297,7 @@ def _filter_correct(observation_matrix, observation_covariance,
 
 
 def _filter(transition_matrices, observation_matrices, transition_covariance,
-            observation_covariance, transition_offsets, observation_offsets,
+            observation_covariances, transition_offsets, observation_offsets,
             initial_state_mean, initial_state_covariance, observations):
     """Apply the Kalman Filter
 
@@ -381,7 +382,7 @@ def _filter(transition_matrices, observation_matrices, transition_covariance,
             )
 
         observation_matrix = _last_dims(observation_matrices, t)
-        observation_covariance = _last_dims(observation_covariance, t)
+        observation_covariance = _last_dims(observation_covariances, t)
         observation_offset = _last_dims(observation_offsets, t, ndims=1)
         (kalman_gains[t], filtered_state_means[t],
          filtered_state_covariances[t]) = (
